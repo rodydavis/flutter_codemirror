@@ -1,0 +1,3 @@
+[submodule "third_party/easy_web_view"]
+	path = third_party/easy_web_view
+	url = https://github.com/rodydavis/easy_web_view
