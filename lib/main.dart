@@ -52,6 +52,18 @@ class _EditorExampleState extends State<EditorExample> {
           ),
           Container(width: 4),
           StringListDropDown(
+            value: editor?.getMode(),
+            items: Editor.MODES,
+            onChanged: (val) {
+              if (mounted)
+                setState(() {
+                  editor.setMode(val);
+                  editor.refresh();
+                });
+            },
+          ),
+          Container(width: 4),
+          StringListDropDown(
             value: editor?.getTheme(),
             items: CodeMirror.THEMES,
             onChanged: (val) {
@@ -87,11 +99,13 @@ class StringListDropDown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> _items = List.from(items);
+    _items.sort();
     return Container(
       child: DropdownButton<String>(
         value: value,
         underline: Container(),
-        items: items
+        items: _items
             .map((e) => DropdownMenuItem(
                   child: Text(
                     e,
