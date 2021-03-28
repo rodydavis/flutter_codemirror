@@ -41,11 +41,15 @@ class EditorState extends State<Editor> {
     });
     editor = CodeMirror.fromElement(element);
     widget.onCreate(editor);
+    _settings();
+    update();
+  }
+
+  void _settings() {
     editor.setMode(widget.mode);
     editor.setTheme(widget.theme);
     editor.setReadOnly(widget.readOnly);
     editor.setLineNumbers(widget.lineNumbers);
-    update();
   }
 
   Doc get activeDoc => editor.getDoc();
@@ -53,6 +57,15 @@ class EditorState extends State<Editor> {
   void update() {
     editor.refresh();
     if (mounted) setState(() {});
+  }
+
+  @override
+  void didUpdateWidget(covariant Editor oldWidget) {
+    if (oldWidget.mode != widget.mode) editor.setMode(widget.mode);
+    if (oldWidget.theme != widget.theme) editor.setTheme(widget.theme);
+    if (oldWidget.lineNumbers != widget.lineNumbers) editor.setLineNumbers(widget.lineNumbers);
+    if (oldWidget.readOnly != widget.readOnly) editor.setReadOnly(widget.readOnly);
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
