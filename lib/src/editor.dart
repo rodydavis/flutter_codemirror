@@ -1,21 +1,21 @@
-import 'dart:html' as html;
-import 'dart:ui' as ui;
-
-import 'package:codemirror/codemirror.dart';
 import 'package:flutter/material.dart';
 
-class Editor extends StatefulWidget {
+import 'codemirror/impl.dart';
+import 'codemirror/io.dart' if (dart.library.html) 'codemirror/web.dart';
+
+export 'codemirror/impl.dart';
+
+class Editor extends StatelessWidget {
   Editor({
     Key key,
     @required this.onCreate,
-    this.mode = 'dart',
-    this.theme = 'monokai',
-    this.lineNumbers = true,
-    this.readOnly = false,
+    @required this.onValue,
+    this.options = const CodeMirrorOptions(),
   }) : super(key: key);
-  final ValueChanged<CodeMirror> onCreate;
-  final String mode, theme;
-  final bool lineNumbers, readOnly;
+
+  final CodeMirrorOptions options;
+  final ValueChanged<EditorController> onCreate;
+  final void Function(String val) onValue;
 
   static List<String> MODES = const <String>[
     "apl",
@@ -143,72 +143,85 @@ class Editor extends StatefulWidget {
     "sparql",
   ];
 
-  @override
-  EditorState createState() => EditorState();
-}
+  static final List<String> THEMES = const [
+    '3024-day',
+    '3024-night',
+    'abcdef',
+    'ambiance-mobile',
+    'ambiance',
+    'ayu-dark',
+    'ayu-mirage',
+    'base16-dark',
+    'base16-light',
+    'bespin',
+    'blackboard',
+    'cobalt',
+    'colorforth',
+    'darcula',
+    'dracula',
+    'duotone-dark',
+    'duotone-light',
+    'eclipse',
+    'elegant',
+    'erlang-dark',
+    'gruvbox-dark',
+    'hopscotch',
+    'icecoder',
+    'idea',
+    'isotope',
+    'lesser-dark',
+    'liquibyte',
+    'lucario',
+    'material-darker',
+    'material-ocean',
+    'material-palenight',
+    'material',
+    'mbo',
+    'mdn-like',
+    'midnight',
+    'monokai',
+    'moxer',
+    'neat',
+    'neo',
+    'night',
+    'nord',
+    'oceanic-next',
+    'panda-syntax',
+    'paraiso-dark',
+    'paraiso-light',
+    'pastel-on-dark',
+    'railscasts',
+    'rubyblue',
+    'seti',
+    'shadowfox',
+    'solarized',
+    'ssms',
+    'the-matrix',
+    'tomorrow-night-bright',
+    'tomorrow-night-eighties',
+    'ttcn',
+    'twilight',
+    'vibrant-ink',
+    'xq-dark',
+    'xq-light',
+    'yeti',
+    'yonce',
+    'zenburn',
+  ];
 
-class EditorState extends State<Editor> {
-  static final _widgetMap = Map<Key, html.Element>();
-  static const String viewType = 'code-editor';
-  CodeMirror editor;
-
-  @override
-  void initState() {
-    super.initState();
-    final key = widget.key;
-    if (_widgetMap[key] == null) {
-      _widgetMap[key] = html.DivElement();
-    }
-    html.Element element = _widgetMap[key];
-    // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(viewType, (int viewId) {
-      // Element Updates
-      return element;
-    });
-    editor = CodeMirror.fromElement(element);
-    widget.onCreate(editor);
-    _settings();
-    update();
-  }
-
-  void _settings() {
-    editor.setMode(widget.mode);
-    editor.setTheme(widget.theme);
-    editor.setReadOnly(widget.readOnly);
-    editor.setLineNumbers(widget.lineNumbers);
-  }
-
-  Doc get activeDoc => editor.getDoc();
-
-  void update() {
-    editor.refresh();
-    if (mounted) setState(() {});
-  }
-
-  @override
-  void didUpdateWidget(covariant Editor oldWidget) {
-    if (oldWidget.mode != widget.mode) editor.setMode(widget.mode);
-    if (oldWidget.theme != widget.theme) editor.setTheme(widget.theme);
-    if (oldWidget.lineNumbers != widget.lineNumbers)
-      editor.setLineNumbers(widget.lineNumbers);
-    if (oldWidget.readOnly != widget.readOnly)
-      editor.setReadOnly(widget.readOnly);
-    super.didUpdateWidget(oldWidget);
-  }
+  static final List<String> KEY_MAPS = const [
+    'default',
+    'emacs',
+    'sublime',
+    'vim',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      ignoring: true,
-      child: LayoutBuilder(
-        builder: (context, dimens) {
-          editor.setSize(dimens.maxWidth, dimens.maxHeight);
-          return HtmlElementView(
-            key: widget?.key,
-            viewType: viewType,
-          );
-        },
-      ),
+    return CodeMirrorView(
+      onValue: onValue,
+      onCreate: onCreate,
+      options: options,
     );
   }
 }

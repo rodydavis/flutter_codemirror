@@ -1,5 +1,5 @@
-import 'package:codemirror/codemirror.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'src/editor.dart';
 import 'src/example.dart';
@@ -30,8 +30,9 @@ class EditorExample extends StatefulWidget {
 }
 
 class _EditorExampleState extends State<EditorExample> {
-  CodeMirror editor;
-
+  CodeMirrorOptions options = CodeMirrorOptions();
+  EditorController controller;
+  String _code;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,46 +41,48 @@ class _EditorExampleState extends State<EditorExample> {
         title: Text(TITLE),
         actions: [
           StringListDropDown(
-            value: editor?.getKeyMap(),
-            items: CodeMirror.KEY_MAPS,
-            onChanged: (val) {
-              if (mounted)
-                setState(() {
-                  editor.setKeyMap(val);
-                  editor.refresh();
-                });
-            },
-          ),
-          Container(width: 4),
-          StringListDropDown(
-            value: editor?.getMode(),
+            value: options.mode,
             items: Editor.MODES,
             onChanged: (val) {
               if (mounted)
                 setState(() {
-                  editor.setMode(val);
-                  editor.refresh();
+                  options = options.copyWith(mode: val);
+                  controller?.setOptions(options);
                 });
             },
           ),
           Container(width: 4),
           StringListDropDown(
-            value: editor?.getTheme(),
-            items: CodeMirror.THEMES,
+            value: options.theme,
+            items: Editor.THEMES,
             onChanged: (val) {
               if (mounted)
                 setState(() {
-                  editor.setTheme(val);
-                  editor.refresh();
+                  options = options.copyWith(theme: val);
+                  controller?.setOptions(options);
                 });
+            },
+          ),
+          Container(width: 4),
+          IconButton(
+            icon: Icon(Icons.file_copy),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: _code));
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Code copied to clipboard!')));
             },
           ),
         ],
       ),
       body: Editor(
-        onCreate: (editor) {
-          this.editor = editor;
-          this.editor.getDoc().setValue(EXAMPLE_CODE);
+        options: this.options,
+        onCreate: (val) {
+          this.controller = val;
+          this.controller.setOptions(this.options);
+          this.controller.setValue(EXAMPLE_CODE);
+        },
+        onValue: (val) {
+          _code = val;
         },
       ),
     );
